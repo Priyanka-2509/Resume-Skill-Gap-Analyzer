@@ -1,26 +1,11 @@
-from src.skill_taxonomy import SKILL_WEIGHTS
+from src.skill_taxonomy import SKILL_WEIGHTS, SKILL_TAXONOMY
 
 def calculate_scores(resume_skills, jd_skills):
-    if not jd_skills:
-        return 0.0
-    
-    total_weight = 0
-    earned_weight = 0
-    
-    for skill in jd_skills:
-        weight = SKILL_WEIGHTS.get(skill, 1.0)
-        total_weight += weight
-        if skill in resume_skills:
-            earned_weight += weight
-            
-    final_score = (earned_weight / total_weight) * 100
-    return round(final_score, 2)from src.skill_taxonomy import SKILL_WEIGHTS, SKILL_TAXONOMY
-
-def calculate_scores(resume_skills, jd_skills):
+    # Check if jd_skills is empty to avoid division by zero
     if not jd_skills:
         return 0.0, {}
 
-    # 1. Overall Weighted Score
+    # 1. Overall Weighted Score calculation
     total_weight = 0
     earned_weight = 0
     for skill in jd_skills:
@@ -29,7 +14,7 @@ def calculate_scores(resume_skills, jd_skills):
         if skill in resume_skills:
             earned_weight += weight
     
-    overall_score = round((earned_weight / total_weight) * 100, 2)
+    overall_score = round((earned_weight / total_weight) * 100, 2) if total_weight > 0 else 0.0
 
     # 2. Category-wise Breakdown
     cat_breakdown = {}
