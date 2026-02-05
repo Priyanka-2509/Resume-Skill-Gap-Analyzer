@@ -108,7 +108,7 @@ with st.sidebar:
     jd_text = st.text_area("Paste Job Description", height=200)
 
     st.markdown("---")
-    analyze_btn = st.button("🚀 RUN ANALYTICS", use_container_width=True)
+    analyze_btn = st.button(" RUN ANALYTICS", use_container_width=True)
 
 # MAIN UI
 if analyze_btn:
