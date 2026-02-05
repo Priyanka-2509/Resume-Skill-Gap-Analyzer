@@ -1,19 +1,26 @@
-# Categories and their skills
 SKILL_TAXONOMY = {
-    "Programming Languages": ["python", "java", "javascript", "typescript", "c++", "ruby", "golang", "swift", "sql", "php"],
-    "Frameworks & Libraries": ["react", "angular", "vue", "django", "flask", "fastapi", "spring boot", "express", "pandas", "numpy", "tensorflow", "pytorch"],
-    "Databases": ["postgresql", "mysql", "mongodb", "redis", "oracle", "sqlite", "cassandra", "mariadb"],
-    "Cloud & DevOps": ["aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "terraform", "ansible", "git", "linux", "nginx"],
-    "Tools & Concepts": ["rest api", "graphql", "jira", "agile", "scrum", "microservices", "unit testing", "ci/cd"]
+    "Technology": ["python", "java", "javascript", "sql", "aws", "docker", "react", "node.js", "html", "css"],
+    
+    "Business & Management": ["project management", "stakeholder management", "business analysis", "strategic planning", "p&l management", "operations", "crm", "salesforce", "agile", "scrum"],
+    
+    "Travel & Tourism": ["gds", "amadeus", "sabre", "itinerary planning", "travel consulting", "visa processing", "hotel booking", "tour management", "customer service", "destination knowledge"],
+    
+    "Marketing & Sales": ["seo", "digital marketing", "social media", "content strategy", "lead generation", "market research", "email marketing", "public relations", "sales forecasting"],
+    
+    "Finance & Accounting": ["financial modeling", "accounting", "auditing", "taxation", "budgeting", "quickbooks", "excel", "financial reporting", "risk management"],
+    
+    "Soft Skills": ["communication", "leadership", "problem solving", "time management", "teamwork", "adaptability", "negotiation", "conflict resolution", "public speaking", "critical thinking"]
 }
 
-# Skill weights: 2.0 = Core/High, 1.0 = Standard
 SKILL_WEIGHTS = {
-    "python": 2.0,
-    "java": 2.0,
-    "javascript": 2.0,
-    "aws": 2.0,
-    "docker": 1.5,
-    "kubernetes": 1.5,
-    "git": 1.2
+    # Tech
+    "python": 2.0, "aws": 2.0,
+    # Business
+    "strategic planning": 2.0, "project management": 1.5,
+    # Travel
+    "amadeus": 2.0, "gds": 2.0, "itinerary planning": 1.5,
+    # Finance
+    "financial modeling": 2.0, "auditing": 1.8,
+    # Soft Skills 
+    "leadership": 1.5, "negotiation": 1.5, "communication": 1.2
 }
