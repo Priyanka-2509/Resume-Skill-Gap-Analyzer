@@ -72,6 +72,13 @@ def local_css():
             border-radius: 20px;
             margin-bottom: 30px;
         }
+        
+        .cat-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -101,15 +108,15 @@ with st.sidebar:
     jd_text = st.text_area("Paste Job Description", height=200)
 
     st.markdown("---")
-    analyze_btn = st.button(" RUN ANALYTICS", use_container_width=True)
+    analyze_btn = st.button("🚀 RUN ANALYTICS", use_container_width=True)
 
-#MAIN UI
+# MAIN UI
 if analyze_btn:
     if not resume_text or not jd_text:
         st.error("Missing input data!")
         st.stop()
 
-    #PIPELINE 
+    # PIPELINE 
     res_clean = clean_text(resume_text)
     jd_clean = clean_text(jd_text)
 
@@ -117,15 +124,18 @@ if analyze_btn:
     jd_skills = extract_skills(jd_clean)
 
     if not jd_skills:
-        st.error("No recognizable skills found in the Job Description.")
+        st.error("No recognizable skills found in the Job Description. Please ensure it contains relevant industry keywords.")
         st.stop()
 
     matches = perform_matching(res_skills, jd_skills)
-    score = calculate_scores(res_skills, jd_skills)
+    
+    # Updated: scoring_engine now returns (score, category_breakdown)
+    score, cat_scores = calculate_scores(res_skills, jd_skills)
+    
     decision = make_decision(score, matches["missing"])
 
     
-    #HERO SECTION
+    # HERO SECTION
     st.markdown(f"""
         <div class="hero-score">
             <h1 style='margin:0; font-size: 50px;'>{score}% Match</h1>
@@ -148,8 +158,9 @@ if analyze_btn:
 
         st.write("**Identified Strengths:**")
         if matches["matched"]:
+            # Sort skills alphabetically for better display
             match_html = "".join(
-                [f'<span class="match-tag">{s}</span>' for s in matches["matched"]]
+                [f'<span class="match-tag">{s.title()}</span>' for s in sorted(matches["matched"])]
             )
             st.markdown(match_html, unsafe_allow_html=True)
         else:
@@ -159,7 +170,7 @@ if analyze_btn:
         st.write("**Missing Requirements:**")
         if matches["missing"]:
             miss_html = "".join(
-                [f'<span class="miss-tag">{s}</span>' for s in matches["missing"]]
+                [f'<span class="miss-tag">{s.title()}</span>' for s in sorted(matches["missing"])]
             )
             st.markdown(miss_html, unsafe_allow_html=True)
         else:
@@ -170,6 +181,18 @@ if analyze_btn:
     
     # RIGHT COLUMN
     with col2:
+        # INDUSTRY STRENGTH SECTION (New for Non-Tech support)
+        st.markdown('<div class="res-card">', unsafe_allow_html=True)
+        st.subheader("🏢 Industry Strength")
+        if cat_scores:
+            st.write("Strength based on Job Description requirements:")
+            for cat, val in cat_scores.items():
+                st.markdown(f'<div class="cat-label">{cat}</div>', unsafe_allow_html=True)
+                st.progress(val)
+        else:
+            st.write("No specific industry categories detected.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
         st.markdown('<div class="res-card">', unsafe_allow_html=True)
         st.subheader("💡 Learning Roadmap")
 
@@ -190,8 +213,8 @@ if analyze_btn:
         st.subheader("📁 Bonus Skills")
 
         if matches["extra"]:
-            st.write("Candidate also offers:")
-            st.write(", ".join([f"**{s}**" for s in matches["extra"]]))
+            st.write("Candidate also offers (Not required but valuable):")
+            st.write(", ".join([f"**{s.title()}**" for s in matches["extra"]]))
         else:
             st.write("No additional taxonomy skills detected.")
 
@@ -202,10 +225,10 @@ else:
     st.markdown("""
         <div style="text-align: center; padding: 100px;">
             <h1 style="font-size: 60px;">📐</h1>
-            <h2 style="opacity: 0.8;">Welcome to the SkillGap Analyzer</h2>
+            <h2 style="opacity: 0.8;">Universal SkillGap Analyzer</h2>
             <p style="opacity: 0.6;">
-                Upload a Resume and Job Description from the sidebar to generate
-                an explainable DSS report.
+                Analyze resumes for <b>Tech, Travel, Business, Marketing, and Finance</b> roles.<br>
+                Upload a Resume and Job Description from the sidebar to begin.
             </p>
         </div>
     """, unsafe_allow_html=True)
