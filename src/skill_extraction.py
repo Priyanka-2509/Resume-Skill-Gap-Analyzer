@@ -1,5 +1,4 @@
 import re
-import re
 from src.skill_taxonomy import SKILL_TAXONOMY
 
 def extract_skills(text):
