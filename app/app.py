@@ -101,7 +101,7 @@ with st.sidebar:
 
     jd_text = st.text_area("Paste Job Description", height=200)
     st.markdown("---")
-    analyze_btn = st.button("🚀 EXECUTE ANALYSIS", use_container_width=True, type="primary")
+    analyze_btn = st.button(" EXECUTE ANALYSIS", use_container_width=True, type="primary")
 
 # DASHBOARD LOGIC 
 if analyze_btn and resume_text and jd_text:
