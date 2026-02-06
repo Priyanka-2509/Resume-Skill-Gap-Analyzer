@@ -3,6 +3,7 @@ import sys
 import os
 from pypdf import PdfReader
 import plotly.graph_objects as go
+import plotly.express as px
 
 # Link to src
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -13,271 +14,204 @@ from src.skill_matching import perform_matching
 from src.scoring_engine import calculate_scores
 from src.decision_engine import make_decision
 
-
-# PDF EXTRACTION
+# --- PDF EXTRACTION ---
 def extract_text_from_pdf(pdf_file):
     try:
         reader = PdfReader(pdf_file)
-        text = ""
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        return text
-    except Exception as e:
-        st.error(f"Error reading PDF: {e}")
+        return "\n".join([p.extract_text() for p in reader.pages if p.extract_text()])
+    except:
         return ""
 
-
-# CSS
+# --- DARK DASHBOARD CSS ---
 def local_css():
     st.markdown("""
         <style>
-        /* Force global text color to dark slate */
-        html, body, [data-testid="stWidgetLabel"], .stApp {
-            color: #1E293B !important;
-            background-color: #F8FAFC !important;
-        }
-
-        /* Force all headers and standard text to be dark */
-        h1, h2, h3, h4, h5, h6, p, span, label {
-            color: #1E293B !important;
-        }
+        .stApp { background-color: #0e1117; color: #ffffff; }
         
-        /* Sidebar text fix */
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-            color: #1E293B !important;
-        }
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] { background-color: #161b22 !important; border-right: 1px solid #30363d; }
 
-        /* Sidebar background */
-        [data-testid="stSidebar"] {
-            background-color: #FFFFFF !important;
-            border-right: 1px solid #E2E8F0;
-        }
-
-        /* Card styling */
-        .stats-card {
-            background-color: #FFFFFF !important;
+        /* Card Container */
+        .res-card {
+            background-color: #1c2128;
             padding: 25px;
             border-radius: 12px;
-            border: 1px solid #E2E8F0;
+            border: 1px solid #30363d;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stats-card h3, .stats-card h2 {
-            color: #1E293B !important;
-            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
-        /* Hero Header Score */
+        /* Hero Header */
         .hero-section {
-            background-color: #FFFFFF !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             padding: 40px;
             border-radius: 15px;
-            border: 1px solid #E2E8F0;
             text-align: center;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
+            border: 1px solid #3b82f6;
         }
 
-        /* Professional Tags (Matches/Misses) */
+        /* Skill Tags */
         .tag {
             display: inline-block;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-weight: 600 !important;
-            margin: 5px;
-            font-size: 13px;
-        }
-        .tag-match { background-color: #DCFCE7 !important; color: #166534 !important; border: 1px solid #BBF7D0; }
-        .tag-miss { background-color: #FEE2E2 !important; color: #991B1B !important; border: 1px solid #FECACA; }
-        .tag-extra { background-color: #E0E7FF !important; color: #3730A3 !important; border: 1px solid #C7D2FE; }
-
-        /* Course Link Buttons */
-        .course-btn {
-            display: block;
-            text-decoration: none;
-            background-color: #F1F5F9 !important;
-            color: #2563EB !important;
-            padding: 14px;
-            border-radius: 10px;
-            border: 1px solid #DBEAFE;
-            margin-bottom: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 4px;
+            font-size: 12px;
             font-weight: 600;
-            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .course-btn:hover {
-            background-color: #2563EB !important;
-            color: #FFFFFF !important;
+        .tag-match { background-color: #064e3b; color: #10b981; border-color: #059669; }
+        .tag-miss { background-color: #450a0a; color: #f87171; border-color: #b91c1c; }
+        .tag-extra { background-color: #1e3a8a; color: #60a5fa; border-color: #2563eb; }
+
+        /* Course Buttons */
+        .course-link {
+            display: block;
+            background-color: #2d333b;
+            color: #58a6ff !important;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 8px;
+            border: 1px solid #444c56;
+            transition: 0.3s;
         }
-        
-        /* Metric Styling override */
-        [data-testid="stMetricValue"] {
-            color: #1E293B !important;
-        }
+        .course-link:hover { background-color: #3b82f6; color: white !important; }
         </style>
     """, unsafe_allow_html=True)
 
-# PAGE CONFIG
-st.set_page_config(page_title="DSS Analyzer", layout="wide", page_icon="📐")
+# --- APP CONFIG ---
+st.set_page_config(page_title="SkillGap DSS Dashboard", layout="wide", page_icon="📐")
 local_css()
 
-
-# SIDEBAR
+# --- SIDEBAR ---
 with st.sidebar:
-    st.title("⚙️ Analysis Panel")
+    st.title("📐 Analyzer Pro")
     st.markdown("---")
-
-    resume_method = st.radio("Resume Input", ["📄 Upload PDF/TXT", "✍️ Paste Text"])
+    input_method = st.radio("Resume Format", ["📄 Upload PDF/TXT", "✍️ Paste Text"])
+    
     resume_text = ""
-
-    if "Upload" in resume_method:
-        uploaded_file = st.file_uploader("Upload Resume", type=["pdf", "txt"])
-        if uploaded_file:
-            if uploaded_file.type == "application/pdf":
-                resume_text = extract_text_from_pdf(uploaded_file)
-            else:
-                resume_text = uploaded_file.read().decode("utf-8", errors="ignore")
+    if "Upload" in input_method:
+        up = st.file_uploader("Upload File", type=["pdf", "txt"])
+        if up:
+            resume_text = extract_text_from_pdf(up) if up.type == "application/pdf" else up.read().decode()
     else:
         resume_text = st.text_area("Paste Resume Content", height=200)
 
     jd_text = st.text_area("Paste Job Description", height=200)
-
     st.markdown("---")
-    analyze_btn = st.button("🚀 GENERATE REPORT", use_container_width=True, type="primary")
+    analyze_btn = st.button("🚀 EXECUTE ANALYSIS", use_container_width=True, type="primary")
 
-# MAIN UI
-if analyze_btn:
-    if not resume_text or not jd_text:
-        st.error("Missing input data!")
+# --- DASHBOARD LOGIC ---
+if analyze_btn and resume_text and jd_text:
+    # 1. Pipeline
+    rc, jc = clean_text(resume_text), clean_text(jd_text)
+    rs, js = extract_skills(rc), extract_skills(jc)
+    
+    if not js:
+        st.error("No industry keywords detected in Job Description.")
         st.stop()
-
-    # PIPELINE 
-    res_clean = clean_text(resume_text)
-    jd_clean = clean_text(jd_text)
-    res_skills = extract_skills(res_clean)
-    jd_skills = extract_skills(jd_clean)
-
-    if not jd_skills:
-        st.error("No recognizable skills found in the Job Description.")
-        st.stop()
-
-    matches = perform_matching(res_skills, jd_skills)
-    score, cat_scores = calculate_scores(res_skills, jd_skills)
+        
+    matches = perform_matching(rs, js)
+    score, cat_scores = calculate_scores(rs, js)
     decision = make_decision(score, matches["missing"])
 
-    # HEADER SECTION
+    # 2. Hero Section
     st.markdown(f"""
         <div class="hero-section">
-            <p style="color: #64748B; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Overall Compatibility</p>
-            <h1 style="color: #1E293B; font-size: 72px; margin: 0;">{score}%</h1>
-            <div style="margin-top: 15px;">
-                <span style="background-color: {decision['color']}; color: white; padding: 8px 25px; border-radius: 50px; font-weight: bold; font-size: 18px;">
-                    {decision['label']}
-                </span>
-            </div>
+            <h1 style="margin:0; font-size: 60px;">{score}%</h1>
+            <p style="font-size: 20px; opacity: 0.8;">Hiring Verdict: <b style="color:{decision['color']}">{decision['label']}</b></p>
         </div>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1.2, 1], gap="large")
+    # 3. Dashboard Grid
+    col_a, col_b = st.columns([1, 1], gap="medium")
 
-    #  Graphs & Analysis
-    with col1:
-        # Radar Chart for Industry Strength
-        st.markdown('<div class="stats-card">', unsafe_allow_html=True)
-        st.subheader("🕸 Industry Competency Radar")
+    with col_a:
+        # GRAPH 1: Category Proficiency (Horizontal Bar)
+        st.markdown('<div class="res-card">', unsafe_allow_html=True)
+        st.subheader("📁 Competency by Category")
         
         categories = list(cat_scores.keys())
         values = [v * 100 for v in cat_scores.values()]
         
-        # Plotly Radar logic
-        fig = go.Figure(data=go.Scatterpolar(
-            r=values + [values[0]],
-            theta=categories + [categories[0]],
-            fill='toself',
-            line_color='#2563EB',
-            fillcolor='rgba(37, 99, 235, 0.2)'
-        ))
-        
-        fig.update_layout(
-            polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-            showlegend=False,
-            margin=dict(l=40, r=40, t=20, b=20),
-            height=380,
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
+        fig_bar = px.bar(
+            x=values, y=categories, orientation='h',
+            labels={'x': 'Proficiency (%)', 'y': ''},
+            template="plotly_dark", color=values,
+            color_continuous_scale="Blues"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        fig_bar.update_layout(height=300, margin=dict(l=0, r=0, t=20, b=0), coloraxis_showscale=False)
+        st.plotly_chart(fig_bar, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="stats-card">', unsafe_allow_html=True)
-        st.subheader("📢 Decision Analysis")
+        # Analysis Summary Card
+        st.markdown('<div class="res-card">', unsafe_allow_html=True)
+        st.subheader("📢 DSS Summary")
         st.write(f"**Justification:** {decision['explanation']}")
-        st.write(f"**Recommended Action:** {decision['recommendation']}")
+        st.write(f"**Strategic Recommendation:** {decision['recommendation']}")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    #  Skills & Roadmap
-    with col2:
-        st.markdown('<div class="stats-card">', unsafe_allow_html=True)
-        st.subheader("🔍 Skill Inventory")
+    with col_b:
+        # GRAPH 2: Skill Distribution (Donut Chart)
+        st.markdown('<div class="res-card">', unsafe_allow_html=True)
+        st.subheader("📊 Skill Set Composition")
         
-        st.write("**Matched Strengths:**")
-        if matches["matched"]:
-            match_html = "".join([f'<span class="tag tag-match">{s.title()}</span>' for s in sorted(matches["matched"])])
-            st.markdown(match_html, unsafe_allow_html=True)
-        else: st.write("No direct matches.")
-
-        st.write("---")
-        st.write("**Critical Gaps:**")
-        if matches["missing"]:
-            miss_html = "".join([f'<span class="tag tag-miss">{s.title()}</span>' for s in sorted(matches["missing"])])
-            st.markdown(miss_html, unsafe_allow_html=True)
-        else: st.write("Perfect match! No gaps.")
+        labels = ['Matched', 'Missing']
+        values = [len(matches['matched']), len(matches['missing'])]
+        
+        fig_pie = go.Figure(data=[go.Pie(
+            labels=labels, values=values, hole=.6,
+            marker_colors=['#10b981', '#ef4444']
+        )])
+        fig_pie.update_layout(template="plotly_dark", height=300, margin=dict(l=0, r=0, t=20, b=0), showlegend=True)
+        st.plotly_chart(fig_pie, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="stats-card">', unsafe_allow_html=True)
-        st.subheader("💡 Learning Roadmap")
-        if matches["missing"]:
-            st.write("Click to master missing competencies:")
-            for s in list(matches["missing"])[:3]:
-                st.markdown(f"""
-                    <a href="https://www.coursera.org/search?query={s}" target="_blank" class="course-btn">
-                        📘 Master {s.title()} Certification →
-                    </a>
-                """, unsafe_allow_html=True)
-        else:
-            st.success("Candidate is fully qualified for this role.")
+        # Persona Generation Logic
+        persona = "Generalist"
+        if cat_scores.get("Technology", 0) > 0.7: persona = "Technical Specialist"
+        elif cat_scores.get("Soft Skills", 0) > 0.8: persona = "Leadership Driven"
+        elif cat_scores.get("Travel & Tourism", 0) > 0.6: persona = "Hospitality Expert"
+
+        st.markdown('<div class="res-card">', unsafe_allow_html=True)
+        st.subheader("👤 Candidate Persona")
+        st.info(f"The system identifies this candidate as a: **{persona}**")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="stats-card">', unsafe_allow_html=True)
-        st.subheader("📁 Bonus Skills")
-        if matches["extra"]:
-            st.write("Candidate also offers:")
-            bonus_html = "".join([f'<span class="tag tag-extra">{s.title()}</span>' for s in sorted(matches["extra"])])
-            st.markdown(bonus_html, unsafe_allow_html=True)
-        else:
-            st.write("No additional industry skills detected.")
-        st.markdown('</div>', unsafe_allow_html=True)
+    # 4. Detailed Skill Inventory (Full Width)
+    st.markdown("---")
+    st.subheader("🔍 Detailed Skill Audit")
+    t1, t2, t3 = st.tabs(["✅ Matched", "❌ Missing", "⭐ Bonus Skills"])
+    
+    with t1:
+        if matches['matched']:
+            html = "".join([f'<span class="tag tag-match">{s.title()}</span>' for s in matches['matched']])
+            st.markdown(html, unsafe_allow_html=True)
+        else: st.write("No matches found.")
 
-# LANDING VIEW
+    with t2:
+        if matches['missing']:
+            html = "".join([f'<span class="tag tag-miss">{s.title()}</span>' for s in matches['missing']])
+            st.markdown(html, unsafe_allow_html=True)
+            st.markdown("### 🎓 Recommended Upskilling")
+            for s in list(matches['missing'])[:3]:
+                st.markdown(f'<a href="https://www.coursera.org/search?query={s}" class="course-link">Master {s.title()} on Coursera →</a>', unsafe_allow_html=True)
+        else: st.write("Zero gaps identified.")
+
+    with t3:
+        if matches['extra']:
+            html = "".join([f'<span class="tag tag-extra">{s.title()}</span>' for s in matches['extra']])
+            st.markdown(html, unsafe_allow_html=True)
+        else: st.write("No additional industry skills detected.")
+
 else:
+    # LANDING VIEW
     st.markdown("""
-        <div style="text-align: center; padding: 80px 20px;">
-            <h1 style="color: #1E293B; font-size: 50px;">📐 Universal SkillGap Analyzer</h1>
-            <p style="color: #64748B; font-size: 20px; max-width: 700px; margin: 0 auto;">
-                A professional Decision Support System to evaluate candidate alignment across Tech, Business, Travel, and Finance domains.
-            </p>
-            <div style="display: flex; justify-content: center; gap: 30px; margin-top: 50px;">
-                <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                    <h2 style="margin: 0;">📊</h2><h4 style="margin: 10px 0;">Weighted Scoring</h4>
-                </div>
-                <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                    <h2 style="margin: 0;">🕸</h2><h4 style="margin: 10px 0;">Radar Visualization</h4>
-                </div>
-                <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                    <h2 style="margin: 0;">📚</h2><h4 style="margin: 10px 0;">Upskilling Links</h4>
-                </div>
-            </div>
+        <div style="text-align: center; padding: 100px 20px;">
+            <h1 style="font-size: 50px; color: #3b82f6;">📐 SkillGap Analyzer Pro</h1>
+            <p style="font-size: 20px; opacity: 0.7;">An advanced Decision Support System for Industry-Agnostic Talent Acquisition.</p>
+            <p style="opacity: 0.5;">Upload a Resume and Job Description to begin the analytical process.</p>
         </div>
     """, unsafe_allow_html=True)
