@@ -82,7 +82,7 @@ def local_css():
     """, unsafe_allow_html=True)
 
 # APP CONFIG
-st.set_page_config(page_title="SkillGap DSS Dashboard", layout="wide", page_icon="📐")
+st.set_page_config(page_title="Resume SkillGap DSS Dashboard", layout="wide", page_icon="📐")
 local_css()
 
 # SIDEBAR
