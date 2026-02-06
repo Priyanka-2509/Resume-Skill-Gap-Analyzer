@@ -29,29 +29,50 @@ def extract_text_from_pdf(pdf_file):
         return ""
 
 
-# PROFESSIONAL LIGHT THEME CSS
+# CSS
 def local_css():
     st.markdown("""
         <style>
-        /* Main background and text */
-        .stApp { background-color: #F8FAFC; color: #1E293B; }
+        /* Force global text color to dark slate */
+        html, body, [data-testid="stWidgetLabel"], .stApp {
+            color: #1E293B !important;
+            background-color: #F8FAFC !important;
+        }
+
+        /* Force all headers and standard text to be dark */
+        h1, h2, h3, h4, h5, h6, p, span, label {
+            color: #1E293B !important;
+        }
         
-        /* Sidebar styling */
-        [data-testid="stSidebar"] { background-color: #FFFFFF !important; border-right: 1px solid #E2E8F0; }
+        /* Sidebar text fix */
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+            color: #1E293B !important;
+        }
+
+        /* Sidebar background */
+        [data-testid="stSidebar"] {
+            background-color: #FFFFFF !important;
+            border-right: 1px solid #E2E8F0;
+        }
 
         /* Card styling */
         .stats-card {
-            background-color: #FFFFFF;
+            background-color: #FFFFFF !important;
             padding: 25px;
             border-radius: 12px;
             border: 1px solid #E2E8F0;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+        
+        .stats-card h3, .stats-card h2 {
+            color: #1E293B !important;
+            margin-bottom: 15px;
+        }
 
         /* Hero Header Score */
         .hero-section {
-            background-color: #FFFFFF;
+            background-color: #FFFFFF !important;
             padding: 40px;
             border-radius: 15px;
             border: 1px solid #E2E8F0;
@@ -60,37 +81,40 @@ def local_css():
             margin-bottom: 30px;
         }
 
-        /* Professional Tags */
+        /* Professional Tags (Matches/Misses) */
         .tag {
             display: inline-block;
             padding: 6px 14px;
             border-radius: 8px;
-            font-weight: 500;
+            font-weight: 600 !important;
             margin: 5px;
             font-size: 13px;
         }
-        .tag-match { background-color: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
-        .tag-miss { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
-        .tag-extra { background-color: #E0E7FF; color: #3730A3; border: 1px solid #C7D2FE; }
+        .tag-match { background-color: #DCFCE7 !important; color: #166534 !important; border: 1px solid #BBF7D0; }
+        .tag-miss { background-color: #FEE2E2 !important; color: #991B1B !important; border: 1px solid #FECACA; }
+        .tag-extra { background-color: #E0E7FF !important; color: #3730A3 !important; border: 1px solid #C7D2FE; }
 
         /* Course Link Buttons */
         .course-btn {
             display: block;
             text-decoration: none;
-            background-color: #FFFFFF;
-            color: #2563EB;
+            background-color: #F1F5F9 !important;
+            color: #2563EB !important;
             padding: 14px;
             border-radius: 10px;
             border: 1px solid #DBEAFE;
             margin-bottom: 12px;
             font-weight: 600;
             text-align: center;
-            transition: all 0.2s;
         }
         .course-btn:hover {
-            background-color: #2563EB;
-            color: #FFFFFF;
-            border-color: #2563EB;
+            background-color: #2563EB !important;
+            color: #FFFFFF !important;
+        }
+        
+        /* Metric Styling override */
+        [data-testid="stMetricValue"] {
+            color: #1E293B !important;
         }
         </style>
     """, unsafe_allow_html=True)
