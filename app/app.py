@@ -14,7 +14,7 @@ from src.skill_matching import perform_matching
 from src.scoring_engine import calculate_scores
 from src.decision_engine import make_decision
 
-# --- PDF EXTRACTION ---
+# PDF EXTRACTION
 def extract_text_from_pdf(pdf_file):
     try:
         reader = PdfReader(pdf_file)
@@ -22,7 +22,7 @@ def extract_text_from_pdf(pdf_file):
     except:
         return ""
 
-# --- DARK DASHBOARD CSS ---
+# DARK DASHBOARD CSS
 def local_css():
     st.markdown("""
         <style>
@@ -81,13 +81,13 @@ def local_css():
         </style>
     """, unsafe_allow_html=True)
 
-# --- APP CONFIG ---
+# APP CONFIG
 st.set_page_config(page_title="SkillGap DSS Dashboard", layout="wide", page_icon="📐")
 local_css()
 
-# --- SIDEBAR ---
+# SIDEBAR
 with st.sidebar:
-    st.title("📐 Analyzer Pro")
+    st.title("📐 Analyzer")
     st.markdown("---")
     input_method = st.radio("Resume Format", ["📄 Upload PDF/TXT", "✍️ Paste Text"])
     
@@ -103,7 +103,7 @@ with st.sidebar:
     st.markdown("---")
     analyze_btn = st.button("🚀 EXECUTE ANALYSIS", use_container_width=True, type="primary")
 
-# --- DASHBOARD LOGIC ---
+# DASHBOARD LOGIC 
 if analyze_btn and resume_text and jd_text:
     # 1. Pipeline
     rc, jc = clean_text(resume_text), clean_text(jd_text)
